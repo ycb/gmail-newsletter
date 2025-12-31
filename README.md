@@ -89,21 +89,21 @@ Deploy → New deployment → Type: Web app
 
 This enables:
 
-ScriptApp.getService().getUrl()
+```ScriptApp.getService().getUrl()
 
 ### 6) Test send
 
 Set:
 
-const TEST_TARGET_EMAIL = "you@domain.com";
+```const TEST_TARGET_EMAIL = "you@domain.com";
 
 Run:
-	•	sendNewsletterToOne()
+```sendNewsletterToOne()
 
 ### 7) Send to all
 
 Run:
-	•	sendNewsletter()
+```sendNewsletter()
 
 ⸻
 
@@ -111,7 +111,7 @@ Run:
 
 Each send creates a link like:
 
-- <webapp_url>?t=<token>
+```<webapp_url>?t=<token>
 
 When someone clicks it:
 	•	status becomes unsubscribed
