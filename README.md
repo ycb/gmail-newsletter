@@ -78,3 +78,61 @@ Copy the correct ID and set:
 
 ```js
 const DRAFT_ID = "r-...";
+
+### 5) Deploy Web App (for unsubscribe URL)
+
+Deploy → New deployment → Type: Web app
+	•	Execute as: Me
+	•	Who has access: Anyone (or Anyone with link)
+
+This enables:
+
+ScriptApp.getService().getUrl()
+
+### 6) Test send
+
+Set:
+
+const TEST_TARGET_EMAIL = "you@domain.com";
+
+Run:
+	•	sendNewsletterToOne()
+
+### 7) Send to all
+
+Run:
+	•	sendNewsletter()
+
+⸻
+
+### Unsubscribe behavior
+
+Each send creates a link like:
+
+<webapp_url>?t=<token>
+
+When someone clicks it:
+	•	status becomes unsubscribed
+	•	unsubscribed_at is set if the column exists
+
+⸻
+
+### Editing / personalization
+
+The script replaces:
+	•	{{first_name}}
+	•	{{unsub_link}} OR PLACEHOLDER_UNSUB_URL
+
+It also hardens inline cid images for better layout behavior inside tables:
+	•	forces display:block; width:100%; height:auto; ...
+
+⸻
+
+### Common gotchas
+	•	Inline images missing
+	•	Ensure you pasted into Gmail so images are truly embedded in the draft body.
+	•	Ensure Gmail API is enabled and Advanced Gmail Service is on.
+	•	Some email clients ignore table auto-fill behavior
+	•	Gmail draft composer may visually “fill” table cells in ways certain clients won’t replicate.
+	•	This is why the script adds conservative inline styles to cid: images.
+
