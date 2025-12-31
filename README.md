@@ -109,7 +109,7 @@ Run:
 
 Each send creates a link like:
 
-<webapp_url>?t=<token>
+- <webapp_url>?t=<token>
 
 When someone clicks it:
 	•	status becomes unsubscribed
