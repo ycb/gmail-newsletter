@@ -76,8 +76,8 @@ Run:
 
 Copy the correct ID and set:
 
-- js
-- const DRAFT_ID = "r-...";
+```js
+ const DRAFT_ID = "r-...";```
 
 ### 5) Deploy Web App (for unsubscribe URL)
 
