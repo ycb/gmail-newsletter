@@ -36,3 +36,45 @@ Recommended optional column:
 - `unsubscribed_at` (timestamp when user unsubscribed)
 
 Example header row:
+
+email | name | first_name | status | token | unsubscribed_at
+
+Notes:
+- `status` should be `subscribed` or `unsubscribed`
+- `token` must be present (script can generate tokens for missing rows)
+
+---
+
+## Setup
+
+### 1) Create your Gmail Draft (template)
+1. Write your newsletter in **Google Docs**
+2. Copy/paste into a new **Gmail Draft**
+3. In the draft body, include:
+   - `{{first_name}}`
+   - Either:
+     - `{{unsub_link}}` (preferred), OR
+     - a placeholder URL like `https://example.com/unsub` (if Gmail/Docs link tooling is annoying)
+
+The draft subject becomes the subject used when sending.
+
+### 2) Apps Script
+1. Open the Google Sheet
+2. Extensions → Apps Script
+3. Paste the code into `Code.gs`
+
+### 3) Enable Gmail API (Advanced Gmail Service)
+In Apps Script Editor:
+- **Services** (left sidebar) → Add a service → **Gmail API** → Add
+
+If prompted in Google Cloud console, also ensure the Gmail API is enabled there.
+
+### 4) Get your Draft ID
+Run:
+
+- `PRINT_DRAFT_IDS()`
+
+Copy the correct ID and set:
+
+```js
+const DRAFT_ID = "r-...";
