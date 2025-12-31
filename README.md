@@ -89,35 +89,41 @@ Deploy → New deployment → Type: Web app
 
 This enables:
 
-```ScriptApp.getService().getUrl()
+```
+ScriptApp.getService().getUrl()
+```
 
 ### 6) Test send
 
 Set:
 
-```const TEST_TARGET_EMAIL = "you@domain.com";
+```
+const TEST_TARGET_EMAIL = "you@domain.com";
+```
 
 Run:
-```sendNewsletterToOne()
+```
+sendNewsletterToOne()
+```
 
 ### 7) Send to all
 
 Run:
-```sendNewsletter()
-
-⸻
+```
+sendNewsletter()
+```
 
 ### Unsubscribe behavior
 
 Each send creates a link like:
 
-```<webapp_url>?t=<token>
+```
+<webapp_url>?t=<token>
+```
 
 When someone clicks it:
 	•	status becomes unsubscribed
 	•	unsubscribed_at is set if the column exists
-
-⸻
 
 ### Editing / personalization
 
@@ -128,7 +134,6 @@ The script replaces:
 It also hardens inline cid images for better layout behavior inside tables:
 	•	forces display:block; width:100%; height:auto; ...
 
-⸻
 
 ### Common gotchas
 	•	Inline images missing
