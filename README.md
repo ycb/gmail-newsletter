@@ -1,145 +1,178 @@
 # Google Docs → Gmail Newsletter (Apps Script)
 
-Send a nicely formatted newsletter by **copy/pasting from Google Docs into a Gmail Draft**, then use **Google Apps Script** to personalize and send to a subscriber list in Google Sheets — while preserving **inline embedded images** (not attachments), and supporting **one-click unsubscribe**.
+Send a nicely formatted newsletter by **copy/pasting from Google Docs into a Gmail Draft**, then use **Google Apps Script** to personalize and send to a subscriber list in Google Sheets — while preserving **inline embedded images** (not attachments), supporting **one-click unsubscribe**, and logging **open events** to a sheet.
+
+---
 
 ## What this solves
 
-- ✅ Keep authoring in **Google Docs** (tables, images, spacing, formatting)
-- ✅ Paste into **Gmail Draft** (WYSIWYG)
+- ✅ Author in **Google Docs** (tables, images, spacing, formatting)
+- ✅ Paste into a **Gmail Draft** (WYSIWYG)
 - ✅ Personalize per recipient (`{{first_name}}`, unsubscribe link)
-- ✅ Preserve **inline embedded images** by extracting `cid:` images via Gmail API + sending using `inlineImages`
-- ✅ One-click unsubscribe with Apps Script Web App endpoint
+- ✅ Preserve **inline embedded images** by extracting `cid:` images via Gmail API and sending via `inlineImages`
+- ✅ One-click unsubscribe via Apps Script Web App endpoint
+- ✅ Open tracking (pixel) → logs to an `Events` sheet
 
 ---
 
 ## Requirements
 
 - Google Sheet with a tab named `Subscribers` (or update `SHEET_NAME`)
-- Google Apps Script project attached to the sheet
-- Gmail Draft created by pasting the formatted content from Google Docs
+- Google Apps Script project (typically bound to the sheet)
+- Gmail Draft created by pasting formatted content from Google Docs
 - **Advanced Gmail Service enabled** in Apps Script (Gmail API)
+- Web App deployment (used for unsubscribe + open tracking)
 
 ---
 
-## Sheet schema (no change)
+## Sheet schema
+
+### Subscribers tab
 
 Required columns:
 
 - `email`
-- `name`
 - `first_name`
 - `status`
 - `token`
 
-Recommended optional column:
+Optional:
 
-- `unsubscribed_at` (timestamp when user unsubscribed)
+- `unsubscribed_at` (timestamp)
 
 Example header row:
 
-email | name | first_name | status | token | unsubscribed_at
+email | first_name | status | token | unsubscribed_at
 
 Notes:
 - `status` should be `subscribed` or `unsubscribed`
-- `token` must be present (script can generate tokens for missing rows)
+- `token` must be present (the script can generate tokens for missing rows)
+
+### Events tab
+
+No strict header requirement, but recommended columns:
+
+ts | event | campaign_id | token | email | url
 
 ---
 
 ## Setup
 
 ### 1) Create your Gmail Draft (template)
+
 1. Write your newsletter in **Google Docs**
 2. Copy/paste into a new **Gmail Draft**
 3. In the draft body, include:
    - `{{first_name}}`
-   - Either:
-     - `{{unsub_link}}` (preferred), OR
-     - a placeholder URL like `https://example.com/unsub` (if Gmail/Docs link tooling is annoying)
+   - `{{unsub_link}}` (preferred)
+
+If Gmail/Docs link tooling is annoying, you can also include a placeholder URL and have the script replace it (see `PLACEHOLDER_UNSUB_URL`).
 
 The draft subject becomes the subject used when sending.
 
+---
+
 ### 2) Apps Script
+
 1. Open the Google Sheet
 2. Extensions → Apps Script
 3. Paste the code into `Code.gs`
+4. Update these constants:
+   - `SPREADSHEET_ID`
+   - `DRAFT_ID`
+   - `WEB_APP_URL` (must be the deployed `/exec` URL)
+   - `DEFAULT_CAMPAIGN_ID` (optional)
+
+---
 
 ### 3) Enable Gmail API (Advanced Gmail Service)
-In Apps Script Editor:
-- **Services** (left sidebar) → Add a service → **Gmail API** → Add
 
-If prompted in Google Cloud console, also ensure the Gmail API is enabled there.
+In Apps Script Editor:
+- Services → Add a service → **Gmail API** → Add
+
+(If prompted in Google Cloud console, also ensure the Gmail API is enabled there.)
+
+---
 
 ### 4) Get your Draft ID
+
 Run:
 
-- `PRINT_DRAFT_IDS()`
+PRINT_DRAFT_IDS()
 
 Copy the correct ID and set:
 
-```
-js
- const DRAFT_ID = "r-...";
-```
+const DRAFT_ID = "r-...";
 
-### 5) Deploy Web App (for unsubscribe URL)
+---
+
+### 5) Deploy Web App (unsubscribe + open tracking)
 
 Deploy → New deployment → Type: Web app
-	•	Execute as: Me
-	•	Who has access: Anyone (or Anyone with link)
 
-This enables:
+- Execute as: Me  
+- Who has access: Anyone (or Anyone with link)
 
-```
-ScriptApp.getService().getUrl()
-```
+Copy the deployed **/exec** URL and set:
 
-### 6) Test send
+const WEB_APP_URL = "https://script.google.com/macros/s/.../exec";
+
+---
+
+## Test
 
 Set:
 
-```
 const TEST_TARGET_EMAIL = "you@domain.com";
-```
 
 Run:
-```
+
 sendNewsletterToOne()
-```
 
-### 7) Send to all
+Verify:
+- Email renders correctly (including inline images)
+- Unsubscribe link works
+- Opens create rows in the `Events` sheet
+
+---
+
+## Send to all
 
 Run:
-```
+
 sendNewsletter()
-```
 
-### Unsubscribe behavior
+---
 
-Each send creates a link like:
+## Unsubscribe behavior
 
-```
-<webapp_url>?t=<token>
-```
+Each send injects an unsubscribe link like:
 
-When someone clicks it:
-	•	status becomes unsubscribed
-	•	unsubscribed_at is set if the column exists
+<WEB_APP_URL>?t=<token>
 
-### Editing / personalization
+When a subscriber clicks:
+- `status` becomes `unsubscribed`
+- `unsubscribed_at` is set if the column exists
 
-The script replaces:
-	•	{{first_name}}
-	•	{{unsub_link}} OR PLACEHOLDER_UNSUB_URL
+---
 
-It also hardens inline cid images for better layout behavior inside tables:
-	•	forces display:block; width:100%; height:auto; ...
+## Open tracking
 
+Each email includes a 1×1 SVG pixel:
 
-### Common gotchas
-	•	Inline images missing
-	•	Ensure you pasted into Gmail so images are truly embedded in the draft body.
-	•	Ensure Gmail API is enabled and Advanced Gmail Service is on.
-	•	Some email clients ignore table auto-fill behavior
-	•	Gmail draft composer may visually “fill” table cells in ways certain clients won’t replicate.
-	•	This is why the script adds conservative inline styles to cid: images.
+<WEB_APP_URL>?mode=track_open&t=<token>&cid=<campaign_id>
 
+When the email client loads images, an `open` event is appended to the `Events` sheet.
+
+Note: Open tracking is approximate. Some clients block images by default; others may prefetch.
+
+---
+
+## Common gotchas
+
+- **Inline images missing**
+  - Ensure images are truly embedded in the Gmail Draft (not attachments).
+  - Confirm Gmail API is enabled and Advanced Gmail Service is on.
+- **Layout differences between Gmail and other clients**
+  - Gmail draft composer may render tables/styles differently than Apple Mail or Outlook.
+  - The script adds conservative inline styling to `cid:` images to reduce breakage.
