@@ -1,6 +1,6 @@
 # Google Docs → Gmail Newsletter (Apps Script)
 
-Send a nicely formatted newsletter by **copy/pasting from Google Docs into a Gmail Draft**, then use **Google Apps Script** to personalize and send to a subscriber list in Google Sheets — while preserving **inline embedded images** (not attachments), supporting **one-click unsubscribe**, and logging **open events** to a sheet.
+Send a nicely formatted newsletter by **copy/pasting from Google Docs into a Gmail Draft**, then use **Google Apps Script** to personalize and send to a subscriber list in Google Sheets — while preserving **inline embedded images**, supporting **one-click unsubscribe**, and logging **open events** to a sheet.
 
 ---
 
